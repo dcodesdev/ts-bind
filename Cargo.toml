@@ -7,7 +7,7 @@ version = "0.1.0"
 license = "MIT"
 edition = "2021"
 repository = "https://github.com/dcodesdev/ts-bind"
-keywords = ["TypeScript", "Bindings", "Rust", "Full Stack"]
+keywords = ["TypeScript", "Bindings", "Rust", "Full-Stack"]
 categories = ["web-programming", "development-tools"]
 readme = "README.md"
 
