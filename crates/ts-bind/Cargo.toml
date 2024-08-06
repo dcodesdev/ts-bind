@@ -13,5 +13,9 @@ documentation = "https://docs.rs/ts-bind"
 exclude = ["/target", "*.lock", "*.bak"]
 
 [dependencies]
+macros = "0.1.0"
+ts = "0.1.0"
+
+[patch.crates-io]
 macros = { path = "../macros" }
 ts = { path = "../ts" }
