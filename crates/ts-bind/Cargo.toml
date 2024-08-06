@@ -1,16 +1,13 @@
 [package]
 name = "ts-bind"
-version = "0.1.0"
-edition = "2021"
 description = "A simple and easy to use Rust crate for TypeScript bindings"
-license = "MIT"
-repository = "https://github.com/dcodesdev/ts-bind"
-readme = "README.md"
-keywords = ["typescript", "bindings", "rust"]
-categories = ["development-tools", "bindings"]
-homepage = "https://github.com/dcodesdev/ts-bind"
-documentation = "https://docs.rs/ts-bind"
-exclude = ["/target", "*.lock", "*.bak"]
+readme.workspace = true
+version.workspace = true
+license.workspace = true
+edition.workspace = true
+repository.workspace = true
+keywords.workspace = true
+categories.workspace = true
 
 [dependencies]
 ts-bind-macros = { workspace = true }
