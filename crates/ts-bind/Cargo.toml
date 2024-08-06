@@ -13,6 +13,4 @@ documentation = "https://docs.rs/ts-bind"
 exclude = ["/target", "*.lock", "*.bak"]
 
 [dependencies]
-macros = { workspace = true }
-ts = { workspace = true }
-
+ts-bind-macros = { workspace = true }

@@ -10,6 +10,7 @@ use syn::{parse_macro_input, DeriveInput};
 use ts::ts_map::ts_rs_map;
 
 mod parsers;
+mod ts;
 
 #[proc_macro_derive(TsBind)]
 pub fn ts_bind_derive(input: TokenStream) -> TokenStream {

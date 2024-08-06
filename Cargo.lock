@@ -3,16 +3,6 @@
 version = 3
 
 [[package]]
-name = "macros"
-version = "0.1.0"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn",
- "ts",
-]
-
-[[package]]
 name = "proc-macro2"
 version = "1.0.86"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -42,19 +32,19 @@ dependencies = [
 ]
 
 [[package]]
-name = "ts"
-version = "0.1.0"
-dependencies = [
- "quote",
- "syn",
-]
-
-[[package]]
 name = "ts-bind"
 version = "0.1.0"
 dependencies = [
- "macros",
- "ts",
+ "ts-bind-macros",
+]
+
+[[package]]
+name = "ts-bind-macros"
+version = "0.1.0"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]

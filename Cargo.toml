@@ -3,6 +3,5 @@ members = [ "crates/*" ]
 resolver = "2"
 
 [workspace.dependencies]
-macros = { version = "0.1.0", path = "crates/macros" }
-ts = { version = "0.1.0", path = "crates/ts" }
+ts-bind-macros = { version = "0.1.0", path = "crates/macros" }
 ts-bind = { version = "0.1.0", path = "crates/ts-bind" }

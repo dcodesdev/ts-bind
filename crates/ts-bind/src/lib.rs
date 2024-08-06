@@ -1,1 +1,1 @@
-pub use macros::TsBind;
+pub use ts_bind_macros::TsBind;

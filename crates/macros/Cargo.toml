@@ -1,5 +1,5 @@
 [package]
-name = "macros"
+name = "ts-bind-macros"
 version = "0.1.0"
 edition = "2021"
 
@@ -7,7 +7,6 @@ edition = "2021"
 proc-macro2 = "1.0"
 quote = "1.0"
 syn = "2.0"
-ts = { workspace = true }
 
 [lib]
 proc-macro = true
