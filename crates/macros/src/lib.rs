@@ -19,7 +19,7 @@ pub fn ts_bind_derive(input: TokenStream) -> TokenStream {
     let name = &input.ident;
     let fields = parse_struct_fields(&input);
 
-    let mut ts_bind = String::from(format!("interface {} {{\n", name));
+    let mut ts_bind = String::from(format!("export interface {} {{\n", name));
     for (ident, ty) in fields.iter() {
         ts_bind.push_str(&format!("   {}: {};\n", ident.to_string(), ts_rs_map(ty)));
     }
