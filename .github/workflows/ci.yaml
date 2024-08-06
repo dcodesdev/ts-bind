@@ -37,5 +37,8 @@ jobs:
           toolchain: stable
           override: true
 
-      - name: Cargo publish
+      - name: Publish ts-bind-macros
+        run: cargo publish -p ts-bind-macros || true
+
+      - name: Publish ts-bind
         run: cargo publish -p ts-bind || true
