@@ -2,6 +2,15 @@
 name = "ts-bind"
 version = "0.1.0"
 edition = "2021"
+description = "A simple and easy to use Rust crate for TypeScript bindings"
+license = "MIT"
+repository = "https://github.com/dcodesdev/ts-bind"
+readme = "README.md"
+keywords = ["typescript", "bindings", "rust"]
+categories = ["development-tools", "bindings"]
+homepage = "https://github.com/dcodesdev/ts-bind"
+documentation = "https://docs.rs/ts-bind"
+exclude = ["/target", "*.lock", "*.bak"]
 
 [dependencies]
 macros = { path = "../macros" }
