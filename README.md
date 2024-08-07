@@ -47,7 +47,9 @@ interface MyStruct {
 
 The `ts_bind` attribute supports the following optional arguments:
 
-- `rename`: Rename the generated interface.
+| Argument | Description                     |
+| -------- | ------------------------------- |
+| `rename` | Rename the generated interface. |
 
 ```rust
 #[derive(TsBind)]
@@ -64,6 +66,16 @@ export interface User {
   postCount: number;
 }
 ```
+
+## Todo
+
+The library is far from complete. Here are some of the features that are planned:
+
+- [ ] Support for enums.
+- [ ] `#[ts_bind(export = "path/to/export")]` custom export path.
+- [ ] `#[ts_bind(rename_all = "camelCase")]` attribute to rename all fields.
+- [ ] `#[ts_bind(skip)]` attribute to skip fields.
+- [ ] `#[ts_bind(skip_if = "condition")]` attribute to skip fields based on a condition.
 
 ## Contributing
 
