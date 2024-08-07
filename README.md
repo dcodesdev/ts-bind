@@ -8,7 +8,7 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-ts-bind = "0.1.0"
+ts-bind = "0.1.2"
 ```
 
 ## Usage
@@ -25,7 +25,38 @@ struct MyStruct {
 }
 ```
 
-This will generate a TypeScript interface in the `bindings` directory.
+This will generate the corresponding TypeScript interface in the `bindings` directory.
+
+```tsx
+// bindings/MyStruct.ts
+
+interface MyStruct {
+  field1: string;
+  field2: number;
+}
+```
+
+## Attributes
+
+The `ts_bind` attribute supports the following optional arguments:
+
+- `rename`: Rename the generated interface.
+
+```rust
+#[derive(TsBind)]
+struct User {
+    id: i32,
+    #[ts_bind(rename = "postCount")]
+    post_count: i32,
+}
+```
+
+```tsx
+export interface User {
+  id: number;
+  postCount: number;
+}
+```
 
 ## Contributing
 

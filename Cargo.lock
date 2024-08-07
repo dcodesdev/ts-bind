@@ -39,14 +39,14 @@ dependencies = [
 
 [[package]]
 name = "ts-bind"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "ts-bind-macros",
 ]
 
 [[package]]
 name = "ts-bind-macros"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "anyhow",
  "proc-macro2",
