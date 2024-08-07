@@ -8,14 +8,6 @@ A Rust crate for generating TypeScript bindings from structs.
 
 ```bash
 cargo add ts-bind
-
-```
-
-Add this to your `Cargo.toml`:
-
-```toml
-[dependencies]
-ts-bind = "0.1.2"
 ```
 
 ## Usage
