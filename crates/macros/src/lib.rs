@@ -28,9 +28,9 @@ pub fn ts_bind_derive(input: TokenStream) -> TokenStream {
     let fields = fields.unwrap();
 
     let mut ts_bind = String::from(format!("export interface {} {{\n", name));
-    for (ident, ty, _attrs) in fields.iter() {
+    for (ident, ty, attrs) in fields.iter() {
         let field_name = ident.to_string();
-        let field_name = _attrs.rename.as_ref().unwrap_or(&field_name);
+        let field_name = attrs.rename.as_ref().unwrap_or(&field_name);
 
         ts_bind.push_str(&format!("   {}: {};\n", field_name, ts_rs_map(ty)));
     }
