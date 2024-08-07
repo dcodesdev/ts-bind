@@ -34,6 +34,40 @@ export interface MyStruct {
 }
 ```
 
+## Features
+
+### Auto import
+
+Unknown types will automatically be imported to the output TypeScript file.
+
+```rust
+#[derive(TsBind)]
+struct User {
+    id: i32,
+    posts: Vec<Post>,
+}
+
+#[derive(TsBind)]
+struct Post {
+    title: String,
+}
+```
+
+```tsx
+// bindings/User.ts
+import { Post } from "./Post";
+
+export interface User {
+  id: number;
+  posts: Post[];
+}
+
+// bindings/Post.ts
+export interface Post {
+  title: string;
+}
+```
+
 ## Attributes
 
 The `ts_bind` attribute supports the following optional arguments:
