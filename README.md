@@ -28,8 +28,7 @@ This will generate the corresponding TypeScript interface in the `bindings` dire
 
 ```tsx
 // bindings/MyStruct.ts
-
-interface MyStruct {
+export interface MyStruct {
   field1: string;
   field2: number;
 }
