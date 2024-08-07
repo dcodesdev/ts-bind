@@ -157,11 +157,11 @@ mod tests {
     #[test]
     fn test_handle_option() {
         let ty: Type = parse_quote!(Option<String>);
-        let result = ts_rs_map(&ty);
+        let result = ts_rs_map(&ty).mapped;
         assert_eq!(result, "string | null");
 
         let ty: Type = parse_quote!(Option<Option<String>>);
-        let result = ts_rs_map(&ty);
+        let result = ts_rs_map(&ty).mapped;
         assert_eq!(result, "string | null | null");
     }
 
@@ -202,14 +202,14 @@ mod tests {
     #[test]
     fn test_vector_map() {
         let ty: Type = parse_quote!(Vec<String>);
-        let result = ts_rs_map(&ty);
+        let result = ts_rs_map(&ty).mapped;
         assert_eq!(result, "(string)[]");
     }
 
     #[test]
     fn test_map_map() {
         let ty: Type = parse_quote!(std::collections::HashMap<String, String>);
-        let result = ts_rs_map(&ty);
+        let result = ts_rs_map(&ty).mapped;
         assert_eq!(result, "{ [key: string]: string }");
     }
 
@@ -217,15 +217,37 @@ mod tests {
     fn test_str_ref() {
         {
             let ty: Type = parse_quote!(&str);
-            let result = ts_rs_map(&ty);
+            let result = ts_rs_map(&ty).mapped;
             assert_eq!(result, "string");
         }
 
         {
             // with lifetime
             let ty: Type = parse_quote!(&'a str);
-            let result = ts_rs_map(&ty);
+            let result = ts_rs_map(&ty).mapped;
             assert_eq!(result, "string");
+        }
+    }
+
+    #[test]
+    fn test_imports() {
+        {
+            let ty: Type = parse_quote!(Vec<Posts>);
+            let result = ts_rs_map(&ty).imports;
+            assert_eq!(result, vec!["Posts".to_string()]);
+        }
+
+        {
+            let ty: Type = parse_quote!(Option<String>);
+            let result = ts_rs_map(&ty).imports;
+
+            assert_eq!(result, Vec::<String>::new());
+        }
+
+        {
+            let ty: Type = parse_quote!(Users);
+            let result = ts_rs_map(&ty).imports;
+            assert_eq!(result, vec!["Users".to_string()]);
         }
     }
 }
