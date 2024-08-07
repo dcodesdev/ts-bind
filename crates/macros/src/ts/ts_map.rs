@@ -1,11 +1,21 @@
 use quote::quote;
 use syn::Type;
 
-pub fn ts_rs_map(token: &Type) -> String {
-    match token {
+#[derive(Debug)]
+pub struct TsRsMap {
+    pub mapped: String,
+    pub imports: Vec<String>,
+}
+
+pub fn ts_rs_map(token: &Type) -> TsRsMap {
+    let mut imports = Vec::new();
+
+    let mapped = match token {
         Type::Path(type_path) if is_option(type_path) => {
             let inner = unwrap_option(type_path);
-            format!("{} | null", ts_rs_map(&inner))
+            let inner_mapped = ts_rs_map(&inner);
+            imports.extend(inner_mapped.imports);
+            format!("{} | null", inner_mapped.mapped)
         }
         Type::Path(type_path) if type_path.path.is_ident("String") => "string".to_string(),
         Type::Reference(type_ref) => {
@@ -13,7 +23,11 @@ pub fn ts_rs_map(token: &Type) -> String {
 
             match ty {
                 Type::Path(type_path) if type_path.path.is_ident("str") => "string".to_string(),
-                _ => ts_rs_map(ty),
+                _ => {
+                    let map_result = ts_rs_map(ty);
+                    imports.extend(map_result.imports);
+                    map_result.mapped
+                }
             }
         }
         Type::Path(type_path)
@@ -35,14 +49,29 @@ pub fn ts_rs_map(token: &Type) -> String {
         Type::Path(type_path) if type_path.path.is_ident("bool") => "boolean".to_string(),
         Type::Path(type_path) if is_vec(type_path) => {
             let inner = unwrap_vec(type_path);
-            format!("({})[]", ts_rs_map(&inner))
+            let inner_mapped = ts_rs_map(&inner);
+            imports.extend(inner_mapped.imports);
+            format!("({})[]", inner_mapped.mapped)
         }
         Type::Path(type_path) if is_hashmap(type_path) => {
             let (key, value) = unwrap_hashmap(type_path);
-            format!("{{ [key: {}]: {} }}", ts_rs_map(&key), ts_rs_map(&value))
+            let key_mapped = ts_rs_map(&key);
+            let value_mapped = ts_rs_map(&value);
+            imports.extend(key_mapped.imports);
+
+            format!(
+                "{{ [key: {}]: {} }}",
+                key_mapped.mapped, value_mapped.mapped
+            )
         }
-        _ => quote! {#token}.to_string(),
-    }
+        _ => {
+            let value = quote! {#token}.to_string();
+            imports.push(value.clone());
+            value
+        }
+    };
+
+    TsRsMap { mapped, imports }
 }
 
 fn is_option(type_path: &syn::TypePath) -> bool {
