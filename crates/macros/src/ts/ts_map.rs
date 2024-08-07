@@ -1,11 +1,11 @@
 use quote::quote;
 use syn::Type;
 
-pub fn ts_rs_map(token: &Type) -> String {
-    match token {
+pub fn ts_rs_map(token: &Type, imports: &mut Vec<String>) -> String {
+    let mapped = match token {
         Type::Path(type_path) if is_option(type_path) => {
             let inner = unwrap_option(type_path);
-            format!("{} | null", ts_rs_map(&inner))
+            format!("{} | null", ts_rs_map(&inner, imports))
         }
         Type::Path(type_path) if type_path.path.is_ident("String") => "string".to_string(),
         Type::Reference(type_ref) => {
@@ -13,7 +13,7 @@ pub fn ts_rs_map(token: &Type) -> String {
 
             match ty {
                 Type::Path(type_path) if type_path.path.is_ident("str") => "string".to_string(),
-                _ => ts_rs_map(ty),
+                _ => ts_rs_map(ty, imports),
             }
         }
         Type::Path(type_path)
@@ -35,14 +35,25 @@ pub fn ts_rs_map(token: &Type) -> String {
         Type::Path(type_path) if type_path.path.is_ident("bool") => "boolean".to_string(),
         Type::Path(type_path) if is_vec(type_path) => {
             let inner = unwrap_vec(type_path);
-            format!("({})[]", ts_rs_map(&inner))
+            format!("({})[]", ts_rs_map(&inner, imports))
         }
         Type::Path(type_path) if is_hashmap(type_path) => {
             let (key, value) = unwrap_hashmap(type_path);
-            format!("{{ [key: {}]: {} }}", ts_rs_map(&key), ts_rs_map(&value))
+
+            format!(
+                "{{ [key: {}]: {} }}",
+                ts_rs_map(&key, imports),
+                ts_rs_map(&value, imports)
+            )
         }
-        _ => quote! {#token}.to_string(),
-    }
+        _ => {
+            let value = quote! {#token}.to_string();
+            imports.push(value.clone());
+            value
+        }
+    };
+
+    mapped
 }
 
 fn is_option(type_path: &syn::TypePath) -> bool {
@@ -128,11 +139,12 @@ mod tests {
     #[test]
     fn test_handle_option() {
         let ty: Type = parse_quote!(Option<String>);
-        let result = ts_rs_map(&ty);
+        let imports = &mut Vec::new();
+        let result = ts_rs_map(&ty, imports);
         assert_eq!(result, "string | null");
 
         let ty: Type = parse_quote!(Option<Option<String>>);
-        let result = ts_rs_map(&ty);
+        let result = ts_rs_map(&ty, imports);
         assert_eq!(result, "string | null | null");
     }
 
@@ -173,14 +185,16 @@ mod tests {
     #[test]
     fn test_vector_map() {
         let ty: Type = parse_quote!(Vec<String>);
-        let result = ts_rs_map(&ty);
+        let imports = &mut Vec::new();
+        let result = ts_rs_map(&ty, imports);
         assert_eq!(result, "(string)[]");
     }
 
     #[test]
     fn test_map_map() {
         let ty: Type = parse_quote!(std::collections::HashMap<String, String>);
-        let result = ts_rs_map(&ty);
+        let imports = &mut Vec::new();
+        let result = ts_rs_map(&ty, imports);
         assert_eq!(result, "{ [key: string]: string }");
     }
 
@@ -188,15 +202,42 @@ mod tests {
     fn test_str_ref() {
         {
             let ty: Type = parse_quote!(&str);
-            let result = ts_rs_map(&ty);
+            let imports = &mut Vec::new();
+            let result = ts_rs_map(&ty, imports);
             assert_eq!(result, "string");
         }
 
         {
             // with lifetime
             let ty: Type = parse_quote!(&'a str);
-            let result = ts_rs_map(&ty);
+            let imports = &mut Vec::new();
+            let result = ts_rs_map(&ty, imports);
             assert_eq!(result, "string");
+        }
+    }
+
+    #[test]
+    fn test_imports() {
+        {
+            let ty: Type = parse_quote!(Vec<Posts>);
+            let imports = &mut Vec::new();
+            let result = ts_rs_map(&ty, imports);
+            assert_eq!(imports, &mut vec!["Posts".to_string()]);
+        }
+
+        {
+            let ty: Type = parse_quote!(Option<String>);
+            let imports = &mut Vec::new();
+            let result = ts_rs_map(&ty, imports);
+
+            assert_eq!(imports, &mut Vec::<String>::new());
+        }
+
+        {
+            let ty: Type = parse_quote!(Users);
+            let imports = &mut Vec::new();
+            let result = ts_rs_map(&ty, imports);
+            assert_eq!(imports, &mut vec!["Users".to_string()]);
         }
     }
 }

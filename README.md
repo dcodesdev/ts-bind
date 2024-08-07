@@ -28,10 +28,43 @@ This will generate the corresponding TypeScript interface in the `bindings` dire
 
 ```tsx
 // bindings/MyStruct.ts
-
-interface MyStruct {
+export interface MyStruct {
   field1: string;
   field2: number;
+}
+```
+
+## Features
+
+### Auto import
+
+Unknown types will automatically be imported to the output TypeScript file.
+
+```rust
+#[derive(TsBind)]
+struct User {
+    id: i32,
+    posts: Vec<Post>,
+}
+
+#[derive(TsBind)]
+struct Post {
+    title: String,
+}
+```
+
+```tsx
+// bindings/User.ts
+import { Post } from "./Post";
+
+export interface User {
+  id: number;
+  posts: Post[];
+}
+
+// bindings/Post.ts
+export interface Post {
+  title: string;
 }
 ```
 

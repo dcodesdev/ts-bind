@@ -23,6 +23,11 @@ jobs:
       - name: Cargo test
         run: cargo test
 
+      - name: Publish test
+        run: |
+          cargo publish -p ts-bind-macros --dry-run
+          cargo publish -p ts-bind --dry-run
+
   publish:
     runs-on: ubuntu-latest
     needs: test
@@ -38,12 +43,7 @@ jobs:
           override: true
 
       - name: Publish ts-bind-macros
-        run: |
-          # check for errors first
-          cargo publish -p ts-bind-macros --dry-run
-          cargo publish -p ts-bind-macros || true
+        run: cargo publish -p ts-bind-macros
 
       - name: Publish ts-bind
-        run: |
-          cargo publish -p ts-bind --dry-run
-          cargo publish -p ts-bind || true
+        run: cargo publish -p ts-bind
