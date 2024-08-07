@@ -38,7 +38,12 @@ jobs:
           override: true
 
       - name: Publish ts-bind-macros
-        run: cargo publish -p ts-bind-macros || true
+        run: |
+          # check for errors first
+          cargo publish -p ts-bind-macros --dry-run
+          cargo publish -p ts-bind-macros || true
 
       - name: Publish ts-bind
-        run: cargo publish -p ts-bind || true
+        run: |
+          cargo publish -p ts-bind --dry-run
+          cargo publish -p ts-bind || true
