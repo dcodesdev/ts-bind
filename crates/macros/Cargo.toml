@@ -1,7 +1,6 @@
 [package]
 name = "ts-bind-macros"
 description = "Macros for the ts-bind crate, not intended to be used directly"
-readme.workspace = true
 version.workspace = true
 license.workspace = true
 edition.workspace = true
@@ -10,6 +9,7 @@ keywords.workspace = true
 categories.workspace = true
 
 [dependencies]
+anyhow = "1.0.86"
 proc-macro2 = "1.0"
 quote = "1.0"
 syn = "2.0"
