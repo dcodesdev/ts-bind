@@ -1,8 +1,15 @@
-# ts-bind
+![TsBind How it works](./assets/ts-bind.gif)
+
+# TsBind
 
 A Rust crate for generating TypeScript bindings from structs.
 
 ## Installation
+
+```bash
+cargo add ts-bind
+
+```
 
 Add this to your `Cargo.toml`:
 
