@@ -39,10 +39,12 @@ pub fn ts_rs_map(token: &Type, imports: &mut Vec<String>) -> String {
         }
         Type::Path(type_path) if is_hashmap(type_path) => {
             let (key, value) = unwrap_hashmap(type_path);
-            let key_mapped = ts_rs_map(&key, imports);
-            let value_mapped = ts_rs_map(&value, imports);
 
-            format!("{{ [key: {}]: {} }}", key_mapped, value_mapped)
+            format!(
+                "{{ [key: {}]: {} }}",
+                ts_rs_map(&key, imports),
+                ts_rs_map(&value, imports)
+            )
         }
         _ => {
             let value = quote! {#token}.to_string();
