@@ -38,13 +38,25 @@ fn parse_field_attributes(attrs: &[Attribute]) -> anyhow::Result<FieldAttributes
         if attr.path().is_ident("ts_bind") {
             attr.parse_nested_meta(|meta| {
                 let path = &meta.path;
-                if path.is_ident("rename") {
-                    field_attrs.rename =
-                        Some(get_nested_value(&meta).expect("Failed to parse rename attribute"));
+
+                let ident = path.get_ident();
+                if let Some(ident) = ident {
+                    let ident_str = ident.to_string();
+                    match ident_str.as_str() {
+                        "rename" => {
+                            field_attrs.rename = Some(
+                                get_nested_value(&meta).expect("Failed to parse rename attribute"),
+                            );
+                        }
+                        "skip" => {
+                            field_attrs.skip = true;
+                        }
+                        _ => {
+                            panic!("Invalid attribute name: {}", ident_str);
+                        }
+                    }
                 }
-                if path.is_ident("skip") {
-                    field_attrs.skip = true;
-                }
+
                 Ok(())
             })?;
         }
