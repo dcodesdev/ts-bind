@@ -150,13 +150,24 @@ export interface User {
 }
 ```
 
-## Attributes
+## Struct-Level Attributes
 
-The `ts_bind` attribute supports the following optional arguments:
+The `ts_bind` attribute supports the following optional arguments for the entire struct:
 
-| Argument | Description                     |
-| -------- | ------------------------------- |
-| `rename` | Rename the generated interface. |
+| Argument     | Description                     |
+| ------------ | ------------------------------- |
+| `rename`     | Rename the generated interface. |
+| `rename_all` | Rename all fields by case.      |
+| `export`     | Custom export path.             |
+
+### Field-Level Attributes
+
+The `ts_bind` attribute supports the following optional arguments for individual fields:
+
+| Argument | Description       |
+| -------- | ----------------- |
+| `rename` | Rename the field. |
+| `skip`   | Skip the field.   |
 
 ```rust
 #[derive(TsBind)]
