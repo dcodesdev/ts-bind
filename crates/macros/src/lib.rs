@@ -1,16 +1,14 @@
 use error::ToCompileError;
+use files::write_to_file;
 use parsers::struc::parse_struct_fields;
 use proc_macro::TokenStream;
 use quote::quote;
-use std::{
-    fs::{create_dir_all, write},
-    path::PathBuf,
-};
 use struct_attrs::StructAttrs;
 use syn::{parse_macro_input, DeriveInput};
 use ts::gen_ts_code::gen_ts_code;
 
 mod error;
+mod files;
 mod parsers;
 mod rename_all;
 mod struct_attrs;
@@ -36,17 +34,4 @@ fn handle_derive(input: &DeriveInput) -> anyhow::Result<TokenStream> {
     write_to_file(&struct_attrs.get_export_path(), &ts_bind)?;
 
     Ok(quote! {}.into())
-}
-
-fn write_to_file(path: &PathBuf, content: &str) -> anyhow::Result<()> {
-    let parent = path.parent().ok_or(anyhow::anyhow!(
-        "Failed to get parent directory of path: {}",
-        path.display()
-    ))?;
-
-    create_dir_all(parent)?;
-
-    write(path, content)?;
-
-    Ok(())
 }
