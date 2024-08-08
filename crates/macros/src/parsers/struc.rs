@@ -1,4 +1,7 @@
-use syn::{Attribute, Data, DeriveInput, Expr, Fields, Ident, Lit, Meta, MetaNameValue, Type};
+use syn::{
+    meta::ParseNestedMeta, Attribute, Data, DeriveInput, Expr, Fields, Ident, Lit, LitStr, Meta,
+    MetaNameValue, Type,
+};
 
 #[derive(Default)]
 pub struct FieldAttributes {
@@ -68,4 +71,13 @@ pub fn get_meta_name_value(rename_meta: &MetaNameValue) -> anyhow::Result<Option
     }
 
     Ok(None)
+}
+
+pub fn get_nested_value(meta: &ParseNestedMeta) -> anyhow::Result<String> {
+    let value = meta.value()?;
+    let s: LitStr = value.parse()?;
+
+    let value = s.value();
+
+    Ok(value)
 }
