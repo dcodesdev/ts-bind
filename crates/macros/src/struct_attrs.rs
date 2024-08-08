@@ -3,19 +3,29 @@ use syn::Attribute;
 use crate::{parsers::struc::get_nested_value, rename_all::RenameAll};
 use std::path::PathBuf;
 
-#[derive(Default, Debug)]
+#[derive(Debug)]
 pub struct StructAttrs {
+    name: String,
     pub rename_all: Option<RenameAll>,
     pub rename: Option<String>,
-    pub export: Option<PathBuf>,
+    export: Option<PathBuf>,
 }
 
 impl StructAttrs {
-    pub fn new() -> Self {
-        Self::default()
+    pub fn from(struct_name: String, attrs: &Vec<Attribute>) -> Self {
+        let mut struct_attrs = Self {
+            name: struct_name,
+            rename_all: None,
+            rename: None,
+            export: None,
+        };
+
+        Self::parse_attrs(&mut struct_attrs, attrs);
+
+        struct_attrs
     }
 
-    pub fn parse_attrs(&mut self, attrs: &Vec<Attribute>) {
+    fn parse_attrs(struct_attrs: &mut Self, attrs: &Vec<Attribute>) {
         attrs.iter().for_each(|attr| {
             if attr.path().is_ident("ts_bind") {
                 attr.parse_nested_meta(|meta| {
@@ -24,7 +34,7 @@ impl StructAttrs {
                         let value =
                             get_nested_value(&meta).expect("Failed to parse rename attribute");
 
-                        self.rename = Some(value);
+                        struct_attrs.rename = Some(value);
                     }
                     if path.is_ident("rename_all") {
                         let value =
@@ -32,19 +42,19 @@ impl StructAttrs {
 
                         match value.as_str() {
                             "camelCase" => {
-                                self.rename_all = Some(RenameAll::CamelCase);
+                                struct_attrs.rename_all = Some(RenameAll::CamelCase);
                             }
                             "snake_case" => {
-                                self.rename_all = Some(RenameAll::SnakeCase);
+                                struct_attrs.rename_all = Some(RenameAll::SnakeCase);
                             }
                             "UPPERCASE" => {
-                                self.rename_all = Some(RenameAll::UpperCase);
+                                struct_attrs.rename_all = Some(RenameAll::UpperCase);
                             }
                             "lowercase" => {
-                                self.rename_all = Some(RenameAll::LowerCase);
+                                struct_attrs.rename_all = Some(RenameAll::LowerCase);
                             }
                             "PascalCase" => {
-                                self.rename_all = Some(RenameAll::PascalCase);
+                                struct_attrs.rename_all = Some(RenameAll::PascalCase);
                             }
                             _ => {
                                 panic!("Invalid attribute name: {}", value);
@@ -55,7 +65,7 @@ impl StructAttrs {
                         let value =
                             get_nested_value(&meta).expect("Failed to parse export attribute");
 
-                        self.export = Some(PathBuf::from(value));
+                        struct_attrs.export = Some(PathBuf::from(value));
                     }
 
                     Ok(())
@@ -63,5 +73,13 @@ impl StructAttrs {
                 .expect("Failed to parse nested meta");
             }
         });
+    }
+
+    pub fn export_path(&self) -> PathBuf {
+        self.export.clone().unwrap_or_else(|| {
+            PathBuf::new()
+                .join("bindings")
+                .join(format!("{}.ts", self.rename.as_ref().unwrap()))
+        })
     }
 }

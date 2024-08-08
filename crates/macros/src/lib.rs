@@ -21,7 +21,7 @@ pub fn ts_bind_derive(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
 
     match handle_derive(&input) {
-        Ok(ts_code) => ts_code,
+        Ok(ts) => ts,
         Err(e) => e.to_compile_error(),
     }
 }
@@ -29,8 +29,7 @@ pub fn ts_bind_derive(input: TokenStream) -> TokenStream {
 fn handle_derive(input: &DeriveInput) -> anyhow::Result<TokenStream> {
     let attrs = &input.attrs;
 
-    let mut struct_attrs = StructAttrs::new();
-    struct_attrs.parse_attrs(attrs);
+    let struct_attrs = StructAttrs::from(input.ident.to_string(), attrs);
 
     let name = input.ident.to_string();
     let struct_name = struct_attrs.rename.as_ref().unwrap_or(&name);
@@ -39,13 +38,7 @@ fn handle_derive(input: &DeriveInput) -> anyhow::Result<TokenStream> {
 
     let ts_bind = gen_ts_code(&struct_name, &fields, &struct_attrs)?;
 
-    let lib_path = struct_attrs.export.unwrap_or_else(|| {
-        PathBuf::new()
-            .join("bindings")
-            .join(format!("{}.ts", struct_name))
-    });
-
-    write_to_file(&lib_path, &ts_bind);
+    write_to_file(&struct_attrs.export_path(), &ts_bind);
 
     Ok(quote! {}.into())
 }
