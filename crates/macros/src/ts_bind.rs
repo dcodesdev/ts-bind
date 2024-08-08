@@ -12,9 +12,9 @@ pub fn handle_ts_bind(input: &DeriveInput) -> anyhow::Result<TokenStream> {
 
     let fields = parse_struct_fields(&input)?;
 
-    let ts_bind = gen_ts_code(struct_attrs.get_name(), &fields, &struct_attrs)?;
+    let ts_code = gen_ts_code(struct_attrs.get_name(), &fields, &struct_attrs)?;
 
-    write_to_file(&struct_attrs.get_export_path(), &ts_bind)?;
+    write_to_file(&struct_attrs.get_export_path(), &ts_code)?;
 
     Ok(quote! {}.into())
 }
