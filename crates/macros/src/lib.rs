@@ -72,19 +72,19 @@ pub fn ts_bind_derive(input: TokenStream) -> TokenStream {
                         get_nested_value(&meta).expect("Failed to parse rename_all attribute");
 
                     match value.as_str() {
-                        "camel_case" => {
+                        "camelCase" => {
                             struct_attrs.rename_all = Some(RenameAll::CamelCase);
                         }
                         "snake_case" => {
                             struct_attrs.rename_all = Some(RenameAll::SnakeCase);
                         }
-                        "upper_case" => {
+                        "UPPERCASE" => {
                             struct_attrs.rename_all = Some(RenameAll::UpperCase);
                         }
-                        "lower_case" => {
+                        "lowercase" => {
                             struct_attrs.rename_all = Some(RenameAll::LowerCase);
                         }
-                        "pascal_case" => {
+                        "PascalCase" => {
                             struct_attrs.rename_all = Some(RenameAll::PascalCase);
                         }
                         _ => {

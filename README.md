@@ -36,6 +36,69 @@ export interface MyStruct {
 
 ## Features
 
+### Rename structs
+
+You can rename the generated interface by adding the `#[ts_bind(rename = "NewName")]` attribute.
+
+```rust
+#[derive(TsBind)]
+#[ts_bind(rename = "NewName")]
+struct MyStruct {
+    field1: String,
+    field2: i32,
+}
+```
+
+```tsx
+// bindings/NewName.ts
+export interface NewName {
+  field1: string;
+  field2: number;
+}
+```
+
+### Rename all fields by case
+
+You can rename all fields by case by adding the `#[ts_bind(rename_all = "...")]` attribute.
+
+```rust
+#[derive(TsBind)]
+#[ts_bind(rename_all = "camelCase")]
+struct MyStruct {
+    field_one: String,
+    field_two: i32,
+}
+```
+
+```tsx
+// bindings/MyStruct.ts
+export interface MyStruct {
+  fieldOne: string;
+  fieldTwo: number;
+}
+```
+
+### Custom export path
+
+You can specify a custom export path by adding the `#[ts_bind(export = "path/to/export")]` attribute.
+
+```rust
+#[derive(TsBind)]
+#[ts_bind(export = "models")]
+struct MyStruct {
+    field1: String,
+    field2: i32,
+}
+```
+
+```tsx
+// models/MyStruct.ts
+export interface MyStruct {
+  field1: string;
+  field2: number;
+}
+```
+
 ### Auto import
 
 Unknown types will automatically be imported to the output TypeScript file.
@@ -55,7 +118,7 @@ struct Post {
 
 ```tsx
 // bindings/User.ts
-import { Post } from "./Post";
+import { Post } from "./Post"; // automatically imported
 
 export interface User {
   id: number;
