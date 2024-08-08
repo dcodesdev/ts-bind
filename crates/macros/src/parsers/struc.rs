@@ -12,9 +12,9 @@ impl FieldAttributes {
     }
 }
 
-pub fn parse_struct_fields(
-    input: &DeriveInput,
-) -> anyhow::Result<Vec<(Ident, Type, FieldAttributes)>> {
+pub type ParsedField = (Ident, Type, FieldAttributes);
+
+pub fn parse_struct_fields(input: &DeriveInput) -> anyhow::Result<Vec<ParsedField>> {
     let mut fields_info = Vec::new();
 
     if let Data::Struct(data_struct) = &input.data {
