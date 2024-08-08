@@ -3,40 +3,18 @@ use std::{
     path::PathBuf,
 };
 
-use convert_case::{Case, Casing};
 use error::ToCompileError;
 use parsers::struc::{get_nested_value, parse_struct_fields};
 use proc_macro::TokenStream;
 use quote::quote;
+use rename_all::RenameAll;
 use syn::{parse_macro_input, DeriveInput};
 use ts::ts_map::ts_rs_map;
 
 mod error;
 mod parsers;
+mod rename_all;
 mod ts;
-
-#[derive(Debug)]
-enum RenameAll {
-    CamelCase,
-    SnakeCase,
-    UpperCase,
-    LowerCase,
-    PascalCase,
-    // TODO: kebab
-    //KebabCase,
-}
-
-impl RenameAll {
-    pub fn to_case(&self, s: &str) -> String {
-        match self {
-            Self::CamelCase => s.to_case(Case::Camel),
-            Self::SnakeCase => s.to_case(Case::Snake),
-            Self::UpperCase => s.to_case(Case::Upper),
-            Self::LowerCase => s.to_case(Case::Lower),
-            Self::PascalCase => s.to_case(Case::Pascal),
-        }
-    }
-}
 
 #[derive(Default, Debug)]
 struct StructAttributes {
