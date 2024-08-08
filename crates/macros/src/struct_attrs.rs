@@ -80,10 +80,9 @@ impl StructAttrs {
     }
 
     pub fn get_export_path(&self) -> PathBuf {
-        self.export.clone().unwrap_or_else(|| {
-            PathBuf::new()
-                .join("bindings")
-                .join(format!("{}.ts", self.get_name()))
-        })
+        self.export
+            .clone()
+            .unwrap_or_else(|| PathBuf::new().join("bindings"))
+            .join(format!("{}.ts", self.get_name()))
     }
 }
