@@ -55,8 +55,14 @@ impl StructAttributes {
 pub fn ts_bind_derive(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
 
-    let attrs = &input.attrs;
+    match gen_ts_code(&input) {
+        Ok(ts_code) => ts_code,
+        Err(e) => e.to_compile_error(),
+    }
+}
 
+fn gen_ts_code(input: &DeriveInput) -> anyhow::Result<TokenStream> {
+    let attrs = &input.attrs;
     let mut struct_attrs = StructAttributes::new();
     attrs.iter().for_each(|attr| {
         if attr.path().is_ident("ts_bind") {
@@ -110,13 +116,7 @@ pub fn ts_bind_derive(input: TokenStream) -> TokenStream {
         input.ident.to_string()
     };
 
-    let fields = parse_struct_fields(&input);
-
-    if let Err(e) = fields {
-        return e.to_compile_error();
-    }
-
-    let fields = fields.unwrap();
+    let fields = parse_struct_fields(&input)?;
 
     let mut ts_bind = String::from(format!("\nexport interface {} {{\n", name));
     let mut imports = Vec::new();
@@ -161,7 +161,7 @@ pub fn ts_bind_derive(input: TokenStream) -> TokenStream {
 
     write_to_file(&lib_path, &ts_bind);
 
-    quote! {}.into()
+    Ok(quote! {}.into())
 }
 
 fn write_to_file(path: &PathBuf, content: &str) {
