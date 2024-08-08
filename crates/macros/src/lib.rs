@@ -8,26 +8,15 @@ use parsers::struc::{get_nested_value, parse_struct_fields};
 use proc_macro::TokenStream;
 use quote::quote;
 use rename_all::RenameAll;
+use struct_attrs::StructAttrs;
 use syn::{parse_macro_input, DeriveInput};
 use ts::ts_map::ts_rs_map;
 
 mod error;
 mod parsers;
 mod rename_all;
+mod struct_attrs;
 mod ts;
-
-#[derive(Default, Debug)]
-struct StructAttributes {
-    pub rename_all: Option<RenameAll>,
-    pub rename: Option<String>,
-    pub export: Option<PathBuf>,
-}
-
-impl StructAttributes {
-    pub fn new() -> Self {
-        Self::default()
-    }
-}
 
 #[proc_macro_derive(TsBind, attributes(ts_bind))]
 pub fn ts_bind_derive(input: TokenStream) -> TokenStream {
@@ -41,7 +30,7 @@ pub fn ts_bind_derive(input: TokenStream) -> TokenStream {
 
 fn gen_ts_code(input: &DeriveInput) -> anyhow::Result<TokenStream> {
     let attrs = &input.attrs;
-    let mut struct_attrs = StructAttributes::new();
+    let mut struct_attrs = StructAttrs::new();
     attrs.iter().for_each(|attr| {
         if attr.path().is_ident("ts_bind") {
             attr.parse_nested_meta(|meta| {
