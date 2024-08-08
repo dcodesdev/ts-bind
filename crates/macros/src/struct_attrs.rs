@@ -75,15 +75,15 @@ impl StructAttrs {
         });
     }
 
+    pub fn get_name(&self) -> &String {
+        self.rename.as_ref().unwrap_or(&self.name)
+    }
+
     pub fn get_export_path(&self) -> PathBuf {
         self.export.clone().unwrap_or_else(|| {
             PathBuf::new()
                 .join("bindings")
-                .join(format!("{}.ts", self.rename.as_ref().unwrap()))
+                .join(format!("{}.ts", self.get_name()))
         })
-    }
-
-    pub fn get_name(&self) -> &String {
-        self.rename.as_ref().unwrap_or(&self.name)
     }
 }
