@@ -4,10 +4,9 @@ use std::{
 };
 
 use error::ToCompileError;
-use parsers::struc::{get_nested_value, parse_struct_fields};
+use parsers::struc::parse_struct_fields;
 use proc_macro::TokenStream;
 use quote::quote;
-use rename_all::RenameAll;
 use struct_attrs::StructAttrs;
 use syn::{parse_macro_input, DeriveInput};
 use ts::ts_map::ts_rs_map;
@@ -31,51 +30,8 @@ pub fn ts_bind_derive(input: TokenStream) -> TokenStream {
 fn gen_ts_code(input: &DeriveInput) -> anyhow::Result<TokenStream> {
     let attrs = &input.attrs;
     let mut struct_attrs = StructAttrs::new();
-    attrs.iter().for_each(|attr| {
-        if attr.path().is_ident("ts_bind") {
-            attr.parse_nested_meta(|meta| {
-                let path = &meta.path;
-                if path.is_ident("rename") {
-                    let value = get_nested_value(&meta).expect("Failed to parse rename attribute");
 
-                    struct_attrs.rename = Some(value);
-                }
-                if path.is_ident("rename_all") {
-                    let value =
-                        get_nested_value(&meta).expect("Failed to parse rename_all attribute");
-
-                    match value.as_str() {
-                        "camelCase" => {
-                            struct_attrs.rename_all = Some(RenameAll::CamelCase);
-                        }
-                        "snake_case" => {
-                            struct_attrs.rename_all = Some(RenameAll::SnakeCase);
-                        }
-                        "UPPERCASE" => {
-                            struct_attrs.rename_all = Some(RenameAll::UpperCase);
-                        }
-                        "lowercase" => {
-                            struct_attrs.rename_all = Some(RenameAll::LowerCase);
-                        }
-                        "PascalCase" => {
-                            struct_attrs.rename_all = Some(RenameAll::PascalCase);
-                        }
-                        _ => {
-                            panic!("Invalid attribute name: {}", value);
-                        }
-                    }
-                }
-                if path.is_ident("export") {
-                    let value = get_nested_value(&meta).expect("Failed to parse export attribute");
-
-                    struct_attrs.export = Some(PathBuf::from(value));
-                }
-
-                Ok(())
-            })
-            .expect("Failed to parse nested meta");
-        }
-    });
+    struct_attrs.parse_attrs(attrs);
 
     let name = if let Some(rename) = struct_attrs.rename {
         rename
