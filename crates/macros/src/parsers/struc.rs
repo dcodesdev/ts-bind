@@ -1,4 +1,7 @@
-use syn::{Attribute, Data, DeriveInput, Expr, Fields, Ident, Lit, Meta, MetaNameValue, Type};
+use syn::{
+    meta::ParseNestedMeta, Attribute, Data, DeriveInput, Expr, Fields, Ident, Lit, LitStr, Meta,
+    MetaNameValue, Type,
+};
 
 #[derive(Default)]
 pub struct FieldAttributes {
@@ -41,7 +44,7 @@ fn parse_field_attributes(attrs: &[Attribute]) -> anyhow::Result<FieldAttributes
                     Meta::NameValue(meta_name_value) => {
                         let path = &meta_name_value.path;
                         if path.is_ident("rename") {
-                            field_attrs.rename = handle_rename(&meta_name_value)?;
+                            field_attrs.rename = get_meta_name_value(&meta_name_value)?;
                         }
                     }
                     Meta::Path(meta_path) => {
@@ -58,7 +61,7 @@ fn parse_field_attributes(attrs: &[Attribute]) -> anyhow::Result<FieldAttributes
     Ok(field_attrs)
 }
 
-fn handle_rename(rename_meta: &MetaNameValue) -> anyhow::Result<Option<String>> {
+pub fn get_meta_name_value(rename_meta: &MetaNameValue) -> anyhow::Result<Option<String>> {
     if let Expr::Lit(lit) = &rename_meta.value {
         if let Lit::Str(lit_str) = &lit.lit {
             return Ok(Some(lit_str.value()));
@@ -68,4 +71,13 @@ fn handle_rename(rename_meta: &MetaNameValue) -> anyhow::Result<Option<String>> 
     }
 
     Ok(None)
+}
+
+pub fn get_nested_value(meta: &ParseNestedMeta) -> anyhow::Result<String> {
+    let value = meta.value()?;
+    let s: LitStr = value.parse()?;
+
+    let value = s.value();
+
+    Ok(value)
 }

@@ -3,8 +3,9 @@ use std::{
     path::PathBuf,
 };
 
+use convert_case::{Case, Casing};
 use error::ToCompileError;
-use parsers::struc::parse_struct_fields;
+use parsers::struc::{get_nested_value, parse_struct_fields};
 use proc_macro::TokenStream;
 use quote::quote;
 use syn::{parse_macro_input, DeriveInput};
@@ -14,11 +15,101 @@ mod error;
 mod parsers;
 mod ts;
 
+#[derive(Debug)]
+enum RenameAll {
+    CamelCase,
+    SnakeCase,
+    UpperCase,
+    LowerCase,
+    PascalCase,
+    // TODO: kebab
+    //KebabCase,
+}
+
+impl RenameAll {
+    pub fn to_case(&self, s: &str) -> String {
+        match self {
+            Self::CamelCase => s.to_case(Case::Camel),
+            Self::SnakeCase => s.to_case(Case::Snake),
+            Self::UpperCase => s.to_case(Case::Upper),
+            Self::LowerCase => s.to_case(Case::Lower),
+            Self::PascalCase => s.to_case(Case::Pascal),
+        }
+    }
+}
+
+#[derive(Default, Debug)]
+struct StructAttributes {
+    pub rename_all: Option<RenameAll>,
+    pub rename: Option<String>,
+    pub export: Option<PathBuf>,
+}
+
+impl StructAttributes {
+    pub fn new() -> Self {
+        Self::default()
+    }
+}
+
 #[proc_macro_derive(TsBind, attributes(ts_bind))]
 pub fn ts_bind_derive(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
 
-    let name = &input.ident;
+    let attrs = &input.attrs;
+
+    let mut struct_attrs = StructAttributes::new();
+    attrs.iter().for_each(|attr| {
+        if attr.path().is_ident("ts_bind") {
+            attr.parse_nested_meta(|meta| {
+                let path = &meta.path;
+                if path.is_ident("rename") {
+                    let value = get_nested_value(&meta).expect("Failed to parse rename attribute");
+
+                    struct_attrs.rename = Some(value);
+                }
+                if path.is_ident("rename_all") {
+                    let value =
+                        get_nested_value(&meta).expect("Failed to parse rename_all attribute");
+
+                    match value.as_str() {
+                        "camelCase" => {
+                            struct_attrs.rename_all = Some(RenameAll::CamelCase);
+                        }
+                        "snake_case" => {
+                            struct_attrs.rename_all = Some(RenameAll::SnakeCase);
+                        }
+                        "UPPERCASE" => {
+                            struct_attrs.rename_all = Some(RenameAll::UpperCase);
+                        }
+                        "lowercase" => {
+                            struct_attrs.rename_all = Some(RenameAll::LowerCase);
+                        }
+                        "PascalCase" => {
+                            struct_attrs.rename_all = Some(RenameAll::PascalCase);
+                        }
+                        _ => {
+                            panic!("Invalid attribute name: {}", value);
+                        }
+                    }
+                }
+                if path.is_ident("export") {
+                    let value = get_nested_value(&meta).expect("Failed to parse export attribute");
+
+                    struct_attrs.export = Some(PathBuf::from(value));
+                }
+
+                Ok(())
+            })
+            .expect("Failed to parse nested meta");
+        }
+    });
+
+    let name = if let Some(rename) = struct_attrs.rename {
+        rename
+    } else {
+        input.ident.to_string()
+    };
+
     let fields = parse_struct_fields(&input);
 
     if let Err(e) = fields {
@@ -34,7 +125,12 @@ pub fn ts_bind_derive(input: TokenStream) -> TokenStream {
             continue;
         }
 
-        let field_name = ident.to_string();
+        let field_name = if let Some(rename_all) = &struct_attrs.rename_all {
+            rename_all.to_case(&ident.to_string())
+        } else {
+            ident.to_string()
+        };
+
         let field_name = attrs.rename.as_ref().unwrap_or(&field_name);
 
         let map_result = ts_rs_map(ty, &mut imports);
@@ -57,15 +153,19 @@ pub fn ts_bind_derive(input: TokenStream) -> TokenStream {
         ts_bind
     );
 
-    let lib_path = PathBuf::new().join("bindings").join(format!("{}.ts", name));
+    let lib_path = if let Some(export_path) = struct_attrs.export {
+        export_path.join(format!("{}.ts", name))
+    } else {
+        PathBuf::new().join("bindings").join(format!("{}.ts", name))
+    };
 
-    write_to_file(lib_path.to_str().unwrap(), &ts_bind);
+    write_to_file(&lib_path, &ts_bind);
 
     quote! {}.into()
 }
 
-fn write_to_file(path: &str, content: &str) {
-    create_dir_all(PathBuf::from(path).parent().unwrap()).unwrap();
+fn write_to_file(path: &PathBuf, content: &str) {
+    create_dir_all(path.parent().unwrap()).unwrap();
     write(path, content).unwrap();
 }
 
