@@ -6,8 +6,8 @@ use std::path::PathBuf;
 #[derive(Debug)]
 pub struct StructAttrs {
     name: String,
-    pub rename_all: Option<RenameAll>,
-    pub rename: Option<String>,
+    rename_all: Option<RenameAll>,
+    rename: Option<String>,
     export: Option<PathBuf>,
 }
 
@@ -96,5 +96,9 @@ impl StructAttrs {
             .clone()
             .unwrap_or_else(|| PathBuf::new().join("bindings"))
             .join(format!("{}.ts", self.get_name()))
+    }
+
+    pub fn get_rename_all(&self) -> Option<&RenameAll> {
+        self.rename_all.as_ref()
     }
 }

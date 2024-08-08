@@ -13,7 +13,7 @@ pub fn gen_ts_code(
             continue;
         }
 
-        let field_name = if let Some(rename_all) = &struct_attrs.rename_all {
+        let field_name = if let Some(rename_all) = struct_attrs.get_rename_all() {
             rename_all.to_case(&ident.to_string())
         } else {
             ident.to_string()
