@@ -41,7 +41,7 @@ fn parse_field_attributes(attrs: &[Attribute]) -> anyhow::Result<FieldAttributes
                     Meta::NameValue(meta_name_value) => {
                         let path = &meta_name_value.path;
                         if path.is_ident("rename") {
-                            field_attrs.rename = handle_rename(&meta_name_value)?;
+                            field_attrs.rename = get_meta_name_value(&meta_name_value)?;
                         }
                     }
                     Meta::Path(meta_path) => {
@@ -58,7 +58,7 @@ fn parse_field_attributes(attrs: &[Attribute]) -> anyhow::Result<FieldAttributes
     Ok(field_attrs)
 }
 
-fn handle_rename(rename_meta: &MetaNameValue) -> anyhow::Result<Option<String>> {
+pub fn get_meta_name_value(rename_meta: &MetaNameValue) -> anyhow::Result<Option<String>> {
     if let Expr::Lit(lit) = &rename_meta.value {
         if let Lit::Str(lit_str) = &lit.lit {
             return Ok(Some(lit_str.value()));

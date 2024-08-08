@@ -3,22 +3,121 @@ use std::{
     path::PathBuf,
 };
 
+use convert_case::{Case, Casing};
 use error::ToCompileError;
-use parsers::struc::parse_struct_fields;
+use parsers::struc::{get_meta_name_value, parse_struct_fields};
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::{parse_macro_input, DeriveInput};
+use syn::{parse_macro_input, DeriveInput, Meta};
 use ts::ts_map::ts_rs_map;
 
 mod error;
 mod parsers;
 mod ts;
 
+#[derive(Debug)]
+enum RenameAll {
+    CamelCase,
+    SnakeCase,
+    UpperCase,
+    LowerCase,
+    PascalCase,
+    // TODO: kebab
+    //KebabCase,
+}
+
+impl RenameAll {
+    pub fn to_case(&self, s: &str) -> String {
+        match self {
+            Self::CamelCase => s.to_case(Case::Camel),
+            Self::SnakeCase => s.to_case(Case::Snake),
+            Self::UpperCase => s.to_case(Case::Upper),
+            Self::LowerCase => s.to_case(Case::Lower),
+            Self::PascalCase => s.to_case(Case::Pascal),
+        }
+    }
+}
+
+#[derive(Default, Debug)]
+struct StructAttributes {
+    pub rename_all: Option<RenameAll>,
+    pub rename: Option<String>,
+    pub export: Option<PathBuf>,
+}
+
+impl StructAttributes {
+    pub fn new() -> Self {
+        Self::default()
+    }
+}
+
 #[proc_macro_derive(TsBind, attributes(ts_bind))]
 pub fn ts_bind_derive(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
 
-    let name = &input.ident;
+    let attrs = &input.attrs;
+
+    let mut struct_attrs = StructAttributes::new();
+    attrs.iter().for_each(|attr| {
+        if attr.path().is_ident("ts_bind") {
+            if let Ok(meta) = attr.parse_args() {
+                match meta {
+                    Meta::Path(_meta_path) => {}
+                    Meta::List(_meta_list) => {}
+                    Meta::NameValue(name) => {
+                        let path = &name.path;
+                        if path.is_ident("rename") {
+                            let value = get_meta_name_value(&name)
+                                .expect("Failed to parse rename attribute")
+                                .expect("Rename attribute is empty");
+
+                            struct_attrs.rename = Some(value);
+                        }
+                        if path.is_ident("rename_all") {
+                            let value = get_meta_name_value(&name)
+                                .expect("Failed to parse rename attribute")
+                                .expect("Rename attribute is empty");
+
+                            match value.as_str() {
+                                "camel_case" => {
+                                    struct_attrs.rename_all = Some(RenameAll::CamelCase);
+                                }
+                                "snake_case" => {
+                                    struct_attrs.rename_all = Some(RenameAll::SnakeCase);
+                                }
+                                "upper_case" => {
+                                    struct_attrs.rename_all = Some(RenameAll::UpperCase);
+                                }
+                                "lower_case" => {
+                                    struct_attrs.rename_all = Some(RenameAll::LowerCase);
+                                }
+                                "pascal_case" => {
+                                    struct_attrs.rename_all = Some(RenameAll::PascalCase);
+                                }
+                                _ => {
+                                    panic!("Invalid attribute name: {}", value);
+                                }
+                            }
+                        }
+                        if path.is_ident("export") {
+                            let value = get_meta_name_value(&name)
+                                .expect("Failed to parse export attribute")
+                                .expect("Export attribute is empty");
+
+                            struct_attrs.export = Some(PathBuf::from(value));
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    let name = if let Some(rename) = struct_attrs.rename {
+        rename
+    } else {
+        input.ident.to_string()
+    };
+
     let fields = parse_struct_fields(&input);
 
     if let Err(e) = fields {
@@ -34,7 +133,12 @@ pub fn ts_bind_derive(input: TokenStream) -> TokenStream {
             continue;
         }
 
-        let field_name = ident.to_string();
+        let field_name = if let Some(rename_all) = &struct_attrs.rename_all {
+            rename_all.to_case(&ident.to_string())
+        } else {
+            ident.to_string()
+        };
+
         let field_name = attrs.rename.as_ref().unwrap_or(&field_name);
 
         let map_result = ts_rs_map(ty, &mut imports);
@@ -57,15 +161,19 @@ pub fn ts_bind_derive(input: TokenStream) -> TokenStream {
         ts_bind
     );
 
-    let lib_path = PathBuf::new().join("bindings").join(format!("{}.ts", name));
+    let lib_path = if let Some(export_path) = struct_attrs.export {
+        export_path.join(format!("{}.ts", name))
+    } else {
+        PathBuf::new().join("bindings").join(format!("{}.ts", name))
+    };
 
-    write_to_file(lib_path.to_str().unwrap(), &ts_bind);
+    write_to_file(&lib_path, &ts_bind);
 
     quote! {}.into()
 }
 
-fn write_to_file(path: &str, content: &str) {
-    create_dir_all(PathBuf::from(path).parent().unwrap()).unwrap();
+fn write_to_file(path: &PathBuf, content: &str) {
+    create_dir_all(path.parent().unwrap()).unwrap();
     write(path, content).unwrap();
 }
 

@@ -10,6 +10,7 @@ categories.workspace = true
 
 [dependencies]
 anyhow = "1.0.86"
+convert_case = "0.6.0"
 proc-macro2 = "1.0"
 quote = "1.0"
 syn = "2.0"
