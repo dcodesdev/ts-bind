@@ -27,18 +27,13 @@ pub fn ts_bind_derive(input: TokenStream) -> TokenStream {
 }
 
 fn handle_derive(input: &DeriveInput) -> anyhow::Result<TokenStream> {
-    let attrs = &input.attrs;
-
-    let struct_attrs = StructAttrs::from(input.ident.to_string(), attrs);
-
-    let name = input.ident.to_string();
-    let struct_name = struct_attrs.rename.as_ref().unwrap_or(&name);
+    let struct_attrs = StructAttrs::from(input.ident.to_string(), &input.attrs);
 
     let fields = parse_struct_fields(&input)?;
 
-    let ts_bind = gen_ts_code(&struct_name, &fields, &struct_attrs)?;
+    let ts_bind = gen_ts_code(struct_attrs.get_name(), &fields, &struct_attrs)?;
 
-    write_to_file(&struct_attrs.export_path(), &ts_bind);
+    write_to_file(&struct_attrs.get_export_path(), &ts_bind);
 
     Ok(quote! {}.into())
 }
