@@ -150,13 +150,24 @@ export interface User {
 }
 ```
 
-## Attributes
+## Struct-Level Attributes
 
-The `ts_bind` attribute supports the following optional arguments:
+The `ts_bind` attribute supports the following optional arguments for the entire struct:
 
-| Argument | Description                     |
-| -------- | ------------------------------- |
-| `rename` | Rename the generated interface. |
+| Argument     | Description                     |
+| ------------ | ------------------------------- |
+| `rename`     | Rename the generated interface. |
+| `rename_all` | Rename all fields by case.      |
+| `export`     | Custom export path.             |
+
+### Field-Level Attributes
+
+The `ts_bind` attribute supports the following optional arguments for individual fields:
+
+| Argument | Description       |
+| -------- | ----------------- |
+| `rename` | Rename the field. |
+| `skip`   | Skip the field.   |
 
 ```rust
 #[derive(TsBind)]
@@ -178,10 +189,10 @@ export interface User {
 
 The library is far from complete. Here are some of the features that are planned:
 
+- [x] `#[ts_bind(export = "path/to/export")]` custom export path.
+- [x] `#[ts_bind(rename_all = "camelCase")]` attribute to rename all fields.
+- [x] `#[ts_bind(skip)]` attribute to skip fields.
 - [ ] Support for enums.
-- [ ] `#[ts_bind(export = "path/to/export")]` custom export path.
-- [ ] `#[ts_bind(rename_all = "camelCase")]` attribute to rename all fields.
-- [ ] `#[ts_bind(skip)]` attribute to skip fields.
 - [ ] `#[ts_bind(skip_if = "condition")]` attribute to skip fields based on a condition.
 
 ## Contributing
