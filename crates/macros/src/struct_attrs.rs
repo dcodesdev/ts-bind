@@ -7,7 +7,6 @@ use std::path::PathBuf;
 pub struct StructAttrs {
     name: String,
     rename_all: Option<RenameAll>,
-    rename: Option<String>,
     export: Option<PathBuf>,
 }
 
@@ -16,7 +15,6 @@ impl StructAttrs {
         let mut struct_attrs = Self {
             name: struct_name,
             rename_all: None,
-            rename: None,
             export: None,
         };
 
@@ -41,7 +39,7 @@ impl StructAttrs {
                                 let value = get_nested_value(&meta)
                                     .expect("Failed to parse rename attribute");
 
-                                struct_attrs.rename = Some(value);
+                                struct_attrs.name = value;
                             }
                             "rename_all" => {
                                 let value = get_nested_value(&meta)
@@ -88,7 +86,7 @@ impl StructAttrs {
     }
 
     pub fn get_name(&self) -> &String {
-        self.rename.as_ref().unwrap_or(&self.name)
+        &self.name
     }
 
     pub fn get_export_path(&self) -> PathBuf {
