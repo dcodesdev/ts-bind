@@ -68,6 +68,25 @@ export interface Post {
 }
 ```
 
+### Skipping fields
+
+You can skip fields by adding the `#[ts_bind(skip)]` attribute.
+
+```rust
+#[derive(TsBind)]
+struct User {
+    id: i32,
+    #[ts_bind(skip)]
+    password: String,
+}
+```
+
+```tsx
+export interface User {
+  id: number;
+}
+```
+
 ## Attributes
 
 The `ts_bind` attribute supports the following optional arguments:
