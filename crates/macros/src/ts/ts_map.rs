@@ -221,14 +221,14 @@ mod tests {
         {
             let ty: Type = parse_quote!(Vec<Posts>);
             let imports = &mut Vec::new();
-            let result = ts_rs_map(&ty, imports);
+            ts_rs_map(&ty, imports);
             assert_eq!(imports, &mut vec!["Posts".to_string()]);
         }
 
         {
             let ty: Type = parse_quote!(Option<String>);
             let imports = &mut Vec::new();
-            let result = ts_rs_map(&ty, imports);
+            ts_rs_map(&ty, imports);
 
             assert_eq!(imports, &mut Vec::<String>::new());
         }
@@ -236,7 +236,7 @@ mod tests {
         {
             let ty: Type = parse_quote!(Users);
             let imports = &mut Vec::new();
-            let result = ts_rs_map(&ty, imports);
+            ts_rs_map(&ty, imports);
             assert_eq!(imports, &mut vec!["Users".to_string()]);
         }
     }

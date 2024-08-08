@@ -30,6 +30,10 @@ pub fn ts_bind_derive(input: TokenStream) -> TokenStream {
     let mut ts_bind = String::from(format!("\nexport interface {} {{\n", name));
     let mut imports = Vec::new();
     for (ident, ty, attrs) in fields.iter() {
+        if attrs.skip {
+            continue;
+        }
+
         let field_name = ident.to_string();
         let field_name = attrs.rename.as_ref().unwrap_or(&field_name);
 

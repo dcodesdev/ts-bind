@@ -3,6 +3,13 @@ use syn::{Attribute, Data, DeriveInput, Expr, Fields, Ident, Lit, Meta, MetaName
 #[derive(Default)]
 pub struct FieldAttributes {
     pub rename: Option<String>,
+    pub skip: bool,
+}
+
+impl FieldAttributes {
+    pub fn new() -> Self {
+        Self::default()
+    }
 }
 
 pub fn parse_struct_fields(
@@ -25,15 +32,24 @@ pub fn parse_struct_fields(
 }
 
 fn parse_field_attributes(attrs: &[Attribute]) -> anyhow::Result<FieldAttributes> {
-    let mut field_attrs = FieldAttributes::default();
+    let mut field_attrs = FieldAttributes::new();
 
     for attr in attrs.iter() {
         if attr.path().is_ident("ts_bind") {
             if let Ok(meta) = attr.parse_args() {
-                if let Meta::NameValue(meta_name_value) = meta {
-                    if meta_name_value.path.is_ident("rename") {
-                        field_attrs.rename = handle_rename(&meta_name_value)?;
+                match meta {
+                    Meta::NameValue(meta_name_value) => {
+                        let path = &meta_name_value.path;
+                        if path.is_ident("rename") {
+                            field_attrs.rename = handle_rename(&meta_name_value)?;
+                        }
                     }
+                    Meta::Path(meta_path) => {
+                        if meta_path.is_ident("skip") {
+                            field_attrs.skip = true;
+                        }
+                    }
+                    Meta::List(_meta_list) => {}
                 }
             }
         }
