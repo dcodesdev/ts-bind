@@ -1,7 +1,4 @@
-use syn::{
-    meta::ParseNestedMeta, Attribute, Data, DeriveInput, Expr, Fields, Ident, Lit, LitStr, Meta,
-    MetaNameValue, Type,
-};
+use syn::{meta::ParseNestedMeta, Attribute, Data, DeriveInput, Fields, Ident, LitStr, Type};
 
 #[derive(Default)]
 pub struct FieldAttributes {
@@ -39,38 +36,21 @@ fn parse_field_attributes(attrs: &[Attribute]) -> anyhow::Result<FieldAttributes
 
     for attr in attrs.iter() {
         if attr.path().is_ident("ts_bind") {
-            if let Ok(meta) = attr.parse_args() {
-                match meta {
-                    Meta::NameValue(meta_name_value) => {
-                        let path = &meta_name_value.path;
-                        if path.is_ident("rename") {
-                            field_attrs.rename = get_meta_name_value(&meta_name_value)?;
-                        }
-                    }
-                    Meta::Path(meta_path) => {
-                        if meta_path.is_ident("skip") {
-                            field_attrs.skip = true;
-                        }
-                    }
-                    Meta::List(_meta_list) => {}
+            attr.parse_nested_meta(|meta| {
+                let path = &meta.path;
+                if path.is_ident("rename") {
+                    field_attrs.rename =
+                        Some(get_nested_value(&meta).expect("Failed to parse rename attribute"));
                 }
-            }
+                if path.is_ident("skip") {
+                    field_attrs.skip = true;
+                }
+                Ok(())
+            })?;
         }
     }
 
     Ok(field_attrs)
-}
-
-pub fn get_meta_name_value(rename_meta: &MetaNameValue) -> anyhow::Result<Option<String>> {
-    if let Expr::Lit(lit) = &rename_meta.value {
-        if let Lit::Str(lit_str) = &lit.lit {
-            return Ok(Some(lit_str.value()));
-        }
-    } else {
-        return Err(anyhow::anyhow!("rename attribute must be a string literal"));
-    }
-
-    Ok(None)
 }
 
 pub fn get_nested_value(meta: &ParseNestedMeta) -> anyhow::Result<String> {
