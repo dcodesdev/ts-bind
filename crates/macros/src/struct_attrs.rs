@@ -30,42 +30,54 @@ impl StructAttrs {
             if attr.path().is_ident("ts_bind") {
                 attr.parse_nested_meta(|meta| {
                     let path = &meta.path;
-                    if path.is_ident("rename") {
-                        let value =
-                            get_nested_value(&meta).expect("Failed to parse rename attribute");
 
-                        struct_attrs.rename = Some(value);
-                    }
-                    if path.is_ident("rename_all") {
-                        let value =
-                            get_nested_value(&meta).expect("Failed to parse rename_all attribute");
+                    let ident = path.get_ident();
 
-                        match value.as_str() {
-                            "camelCase" => {
-                                struct_attrs.rename_all = Some(RenameAll::CamelCase);
+                    if let Some(ident) = ident {
+                        let ident_str = ident.to_string();
+
+                        match ident_str.as_str() {
+                            "rename" => {
+                                let value = get_nested_value(&meta)
+                                    .expect("Failed to parse rename attribute");
+
+                                struct_attrs.rename = Some(value);
                             }
-                            "snake_case" => {
-                                struct_attrs.rename_all = Some(RenameAll::SnakeCase);
+                            "rename_all" => {
+                                let value = get_nested_value(&meta)
+                                    .expect("Failed to parse rename_all attribute");
+
+                                match value.as_str() {
+                                    "camelCase" => {
+                                        struct_attrs.rename_all = Some(RenameAll::CamelCase);
+                                    }
+                                    "snake_case" => {
+                                        struct_attrs.rename_all = Some(RenameAll::SnakeCase);
+                                    }
+                                    "UPPERCASE" => {
+                                        struct_attrs.rename_all = Some(RenameAll::UpperCase);
+                                    }
+                                    "lowercase" => {
+                                        struct_attrs.rename_all = Some(RenameAll::LowerCase);
+                                    }
+                                    "PascalCase" => {
+                                        struct_attrs.rename_all = Some(RenameAll::PascalCase);
+                                    }
+                                    _ => {
+                                        panic!("Invalid attribute name: {}", value);
+                                    }
+                                }
                             }
-                            "UPPERCASE" => {
-                                struct_attrs.rename_all = Some(RenameAll::UpperCase);
-                            }
-                            "lowercase" => {
-                                struct_attrs.rename_all = Some(RenameAll::LowerCase);
-                            }
-                            "PascalCase" => {
-                                struct_attrs.rename_all = Some(RenameAll::PascalCase);
+                            "export" => {
+                                let value = get_nested_value(&meta)
+                                    .expect("Failed to parse export attribute");
+
+                                struct_attrs.export = Some(PathBuf::from(value));
                             }
                             _ => {
-                                panic!("Invalid attribute name: {}", value);
+                                panic!("Invalid attribute name: {}", ident_str);
                             }
                         }
-                    }
-                    if path.is_ident("export") {
-                        let value =
-                            get_nested_value(&meta).expect("Failed to parse export attribute");
-
-                        struct_attrs.export = Some(PathBuf::from(value));
                     }
 
                     Ok(())
