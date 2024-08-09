@@ -1,0 +1,2 @@
+[clippy]
+deny = ["unwrap_used", "expect_used"]
