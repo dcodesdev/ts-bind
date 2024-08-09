@@ -1,12 +1,15 @@
 use super::ts_map::ts_rs_map;
-use crate::{parsers::struc::ParsedField, struct_attrs::StructAttrs};
+use crate::{
+    parsers::struc::ParsedField,
+    struct_attrs::{StructAttrs, StructName},
+};
 
 pub fn gen_ts_code(
-    struct_name: &str,
+    struct_name: &StructName,
     fields: &Vec<ParsedField>,
     struct_attrs: &StructAttrs,
 ) -> anyhow::Result<String> {
-    let mut ts_bind = String::from(format!("\nexport interface {} {{\n", struct_name));
+    let mut ts_bind = String::from(format!("\nexport interface {} {{\n", struct_name.as_str()));
     let mut imports = Vec::new();
     for (ident, ty, attrs) in fields.iter() {
         if attrs.skip {

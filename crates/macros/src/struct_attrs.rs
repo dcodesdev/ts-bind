@@ -1,3 +1,4 @@
+use convert_case::{Case, Casing};
 use syn::Attribute;
 
 use crate::{parsers::struc::get_nested_value, rename_all::RenameAll};
@@ -5,15 +6,28 @@ use std::path::PathBuf;
 
 #[derive(Debug)]
 pub struct StructAttrs {
-    name: String,
+    name: StructName,
     rename_all: Option<RenameAll>,
     export: Option<PathBuf>,
+}
+
+#[derive(Debug)]
+pub struct StructName(String);
+
+impl StructName {
+    pub fn new(name: String) -> Self {
+        Self(name.to_case(Case::Pascal))
+    }
+
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
 }
 
 impl StructAttrs {
     pub fn from(struct_name: String, attrs: &Vec<Attribute>) -> Self {
         let mut struct_attrs = Self {
-            name: struct_name,
+            name: StructName::new(struct_name),
             rename_all: None,
             export: None,
         };
@@ -39,7 +53,7 @@ impl StructAttrs {
                                 let value = get_nested_value(&meta)
                                     .expect("Failed to parse rename attribute");
 
-                                struct_attrs.name = value;
+                                struct_attrs.name = StructName::new(value);
                             }
                             "rename_all" => {
                                 let value = get_nested_value(&meta)
@@ -85,7 +99,7 @@ impl StructAttrs {
         });
     }
 
-    pub fn get_name(&self) -> &String {
+    pub fn get_name(&self) -> &StructName {
         &self.name
     }
 
@@ -93,7 +107,7 @@ impl StructAttrs {
         self.export
             .clone()
             .unwrap_or_else(|| PathBuf::new().join("bindings"))
-            .join(format!("{}.ts", self.get_name()))
+            .join(format!("{}.ts", self.get_name().as_str()))
     }
 
     pub fn get_rename_all(&self) -> Option<&RenameAll> {
