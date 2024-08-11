@@ -34,7 +34,7 @@ pub fn gen_ts_code(
     sorter(&mut imports);
     for to_import in imports {
         // Do not import current interface
-        if to_import == struct_name {
+        if to_import == struct_name.as_str() {
             continue;
         }
 
