@@ -33,6 +33,11 @@ pub fn gen_ts_code(
 
     sorter(&mut imports);
     for to_import in imports {
+        // Do not import current interface
+        if to_import == struct_name {
+            continue;
+        }
+
         ts_bind = format!(
             "import type {{ {} }} from \"./{}\";\n{}",
             to_import, to_import, ts_bind

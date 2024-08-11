@@ -48,14 +48,14 @@ dependencies = [
 
 [[package]]
 name = "ts-bind"
-version = "0.1.6"
+version = "0.1.7"
 dependencies = [
  "ts-bind-macros",
 ]
 
 [[package]]
 name = "ts-bind-macros"
-version = "0.1.6"
+version = "0.1.7"
 dependencies = [
  "anyhow",
  "convert_case",
