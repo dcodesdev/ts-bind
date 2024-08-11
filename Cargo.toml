@@ -12,6 +12,6 @@ categories = ["web-programming", "development-tools"]
 readme = "README.md"
 
 [workspace.dependencies]
-ts-bind-macros = { version = "0.1", path = "crates/macros" }
-ts-bind = { version = "0.1", path = "crates/ts-bind" }
+ts-bind-macros = { version = "*", path = "crates/macros" }
+ts-bind = { version = "*", path = "crates/ts-bind" }
 
